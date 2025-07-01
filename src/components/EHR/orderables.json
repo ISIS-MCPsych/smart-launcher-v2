@@ -1,0 +1,16 @@
+{
+    "tests": [
+        "Blood Test",
+        "X-Ray",
+        "MRI Scan",
+        "CT Scan",
+        "Urine Test"
+    ],
+    "treatments": [
+        "Physical Therapy",
+        "Chemotherapy",
+        "Radiation Therapy",
+        "Surgery",
+        "Medication"
+    ]
+}
