@@ -218,13 +218,12 @@ export default function EHR() {
                 </div>
                 <div className="ehr-status-bar">
                     <div className="flex-row">
-                        <div className="text-muted" style={{ flex: "0 1 auto" }}>EHR Status bar</div>
+                        <div className="text-muted">EHR Status bar</div>
                         <div>Patient ID: { patientID }</div>
                         <div>User ID: { userID }</div>
                         <div>Encounter ID: { encounterID }</div>
                         <button 
                             className="btn btn-primary" 
-                            style={{ margin: "0.5em auto" }} 
                             onClick={handleOrderClick}>
                             Order
                         </button>

@@ -116,4 +116,8 @@
 }
 .ehr-status-bar > .flex-row > div:first-child {
     border-left: none;
+    flex: 0 1 auto;
+}
+.ehr-status-bar > .flex-row > button {
+    margin: 0.5em auto;
 }
