@@ -2,6 +2,11 @@ import type { fhirclient } from "fhirclient/lib/types.d"
 
 // LOINC codes for common tests
 const testCodes: Record<string, { system: string; code: string; display: string }> = {
+  "PHQ-9": {
+    system: "http://loinc.org",
+    code: "44249-1",
+    display: "PHQ-9 quick depression assessment panel"
+  },
   "Blood Test": {
     system: "http://loinc.org",
     code: "33747-0",
