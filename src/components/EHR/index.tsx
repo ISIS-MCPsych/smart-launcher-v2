@@ -4,6 +4,7 @@ import { Helmet, HelmetProvider } from "react-helmet-async"
 import FHIR from "fhirclient"
 import getPHQ9Order from "./phq9-order"
 import { formatAge, humanName }   from "../../lib"
+import { decode } from "../../isomorphic/codec"
 import "./style.css"
 import orderables from "./orderables.json";
 
@@ -24,6 +25,8 @@ export default function EHR() {
         clientId: "my-client-id",
         scope: "launch/patient patient/*.read user/*.read offline_access openid fhirUser"
     })
+
+    const launchUrl = searchParams.get("app")
 
     const handleOrderClick = () => {
         orderDialogRef.current?.showModal()
@@ -79,7 +82,54 @@ export default function EHR() {
         return () => window.removeEventListener("message", onMessage, false);
     }, [])
 
-    const launchUrl = searchParams.get("app")
+    // Extract and decode launch parameters from app URL to get pre-selected patient/provider
+    useEffect(() => {
+        if (!launchUrl) return
+
+        try {
+            const appUrl = new URL(launchUrl)
+            const launchParam = appUrl.searchParams.get("launch")
+            
+            if (launchParam) {
+                const launchOptions = decode(launchParam)
+                console.log("Decoded launch options:", launchOptions)
+                
+                // If we have pre-selected patient/provider IDs, fetch them from FHIR
+                if (launchOptions.patient) {
+                    const patientIds = launchOptions.patient.split(',').map(id => id.trim()).filter(Boolean)
+                    if (patientIds.length === 1) {
+                        // Fetch the patient data
+                        fhirClient.request(`Patient/${patientIds[0]}`)
+                            .then((patient: fhir4.Patient) => {
+                                console.log("Fetched pre-selected patient:", patient)
+                                setPatient(patient)
+                            })
+                            .catch((err: any) => console.error("Failed to fetch patient:", err))
+                    }
+                }
+                
+                if (launchOptions.provider) {
+                    const providerIds = launchOptions.provider.split(',').map(id => id.trim()).filter(Boolean)
+                    if (providerIds.length === 1) {
+                        // Fetch the provider data
+                        fhirClient.request(`Practitioner/${providerIds[0]}`)
+                            .then((practitioner: fhir4.Practitioner) => {
+                                console.log("Fetched pre-selected provider:", practitioner)
+                                setUser(practitioner)
+                            })
+                            .catch((err: any) => console.error("Failed to fetch provider:", err))
+                    }
+                }
+                
+                if (launchOptions.encounter && launchOptions.encounter !== "AUTO" && launchOptions.encounter !== "MANUAL" && launchOptions.encounter !== "NONE") {
+                    console.log("Setting pre-selected encounter ID:", launchOptions.encounter)
+                    setEncounterID(launchOptions.encounter)
+                }
+            }
+        } catch (error) {
+            console.error("Failed to decode launch parameters:", error)
+        }
+    }, [searchParams])
 
     if (!launchUrl) {
         return (
