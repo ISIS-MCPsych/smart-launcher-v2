@@ -267,19 +267,21 @@ export default function EHR() {
                             </div>
                         ))}
                     </div>
-                    <button
-                        className="btn btn-secondary"
-                        type="button"
-                        onClick={handleCloseOrder}>
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        onClick={submitOrders}
-                        disabled={selectedItems.tests.length === 0 && selectedItems.treatments.length === 0}>
-                        Order ({selectedItems.tests.length + selectedItems.treatments.length} Items)
-                    </button>
+                    <div className="actions">
+                        <button
+                            className="btn btn-secondary"
+                            type="button"
+                            onClick={handleCloseOrder}>
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            onClick={submitOrders}
+                            disabled={selectedItems.tests.length === 0 && selectedItems.treatments.length === 0}>
+                            Order ({selectedItems.tests.length + selectedItems.treatments.length} Items)
+                        </button>
+                    </div>
                 </form>
             </dialog>
         </HelmetProvider>

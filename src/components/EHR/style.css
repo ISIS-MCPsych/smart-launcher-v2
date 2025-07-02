@@ -121,3 +121,13 @@
 .ehr-status-bar > .flex-row > button {
     margin: 0.5em auto;
 }
+
+.order-dialog .form-check .form-check-input {
+    margin-right: 0.5em;
+}
+
+.order-dialog form .actions {
+    display: flex;
+    justify-content: flex-end;
+    column-gap: 1em;
+}
