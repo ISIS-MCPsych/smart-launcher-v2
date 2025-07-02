@@ -2,11 +2,10 @@ import { useSearchParams }        from "react-router-dom"
 import { useEffect, useState, useRef }    from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
 import FHIR from "fhirclient"
-import getPHQ9Order from "./phq9-order"
+import { createOrder, availableTests, availableTreatments } from "./order-factory"
 import { formatAge, humanName }   from "../../lib"
 import { decode } from "../../isomorphic/codec"
 import "./style.css"
-import orderables from "./orderables.json";
 
 
 export default function EHR() {
@@ -45,15 +44,45 @@ export default function EHR() {
         });
     };
 
-    const orderPHQ9 = async () => {
-        const order = getPHQ9Order(patient?.id || "", user?.id || "")
-        await fhirClient.create(order)
-            .then((response) => {
-                console.log("PHQ-9 order created:", order)
-            }
-            ).catch((error) => {
-                console.error("Error creating PHQ-9 order:", error)
+    const submitOrders = async (e?: React.MouseEvent) => {
+        e?.preventDefault()
+        
+        const patientId = patient?.id || ""
+        const providerId = user?.id || ""
+        
+        if (!patientId || !providerId) {
+            console.error("Missing patient ID or provider ID")
+            return
+        }
+
+        const allOrders: Array<{ type: 'test' | 'treatment', item: string }> = [
+            ...selectedItems.tests.map(test => ({ type: 'test' as const, item: test })),
+            ...selectedItems.treatments.map(treatment => ({ type: 'treatment' as const, item: treatment }))
+        ]
+
+        if (allOrders.length === 0) {
+            console.warn("No items selected to order")
+            handleCloseOrder()
+            return
+        }
+
+        try {
+            const orderPromises = allOrders.map(async ({ type, item }) => {
+                const order = createOrder(type, item, patientId, providerId)
+                const response = await fhirClient.create(order)
+                console.log(`${type} order created for "${item}":`, response)
+                return response
             })
+
+            await Promise.all(orderPromises)
+            console.log(`Successfully created ${allOrders.length} orders`)
+            
+            // Clear selected items after successful submission
+            setSelectedItems({ tests: [], treatments: [] })
+        } catch (error) {
+            console.error("Error creating orders:", error)
+        }
+        
         handleCloseOrder()
     }
 
@@ -209,7 +238,7 @@ export default function EHR() {
                 <form>
                     <div>
                         <h4>Tests</h4>
-                        {orderables.tests.map((test) => (
+                        {availableTests.map((test) => (
                             <div className="form-check" key={test}>
                                 <label className="form-check-label">
                                     <input
@@ -225,7 +254,7 @@ export default function EHR() {
                     </div>
                     <div>
                         <h4>Treatments</h4>
-                        {orderables.treatments.map((treatment) => (
+                        {availableTreatments.map((treatment) => (
                             <div className="form-check" key={treatment}>
                                 <label className="form-check-label">
                                     <input
@@ -240,15 +269,17 @@ export default function EHR() {
                         ))}
                     </div>
                     <button
-                        className="btn btn-secondary" 
+                        className="btn btn-secondary"
+                        type="button"
                         onClick={handleCloseOrder}>
                         Cancel
                     </button>
                     <button
                         type="submit"
                         className="btn btn-primary"
-                        onClick={orderPHQ9}>
-                        Order
+                        onClick={submitOrders}
+                        disabled={selectedItems.tests.length === 0 && selectedItems.treatments.length === 0}>
+                        Order ({selectedItems.tests.length + selectedItems.treatments.length} Items)
                     </button>
                 </form>
             </dialog>
