@@ -18,7 +18,7 @@ const LauncherQueryDefaults: LauncherQuery = {
     fhir_version: "r4",
     launch_url  : "",
     tab         : "0",
-    launch      : encode({ launch_type: "provider-ehr", client_type: "public", pkce: "auto" }),
+    launch      : encode({ launch_type: "provider-ehr", client_type: "public", pkce: "auto", sim_ehr: true }),
     jwks_tab    : "0",
     validation  : "0"
 }

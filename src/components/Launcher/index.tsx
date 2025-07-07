@@ -44,7 +44,7 @@ const DEFAULT_LAUNCH_PARAMS: SMART.LaunchParams = {
     encounter    : "AUTO",
     skip_login   : false,
     skip_auth    : false,
-    sim_ehr      : false,
+    sim_ehr      : true,
     scope        : "",
     redirect_uris: "",
     client_id    : "",
