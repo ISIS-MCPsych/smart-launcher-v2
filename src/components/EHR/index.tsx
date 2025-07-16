@@ -52,7 +52,7 @@ export default function EHR() {
         const iframe = document.getElementById('frame') as HTMLIFrameElement
         if (iframe && iframe.contentWindow) {
             const message = {
-                type: "order",
+                action: "order",
                 payload: {
                     timestamp: new Date().toISOString(),
                     patient: {
