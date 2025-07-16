@@ -6,6 +6,7 @@ import { createOrder, availableTests, availableTreatments } from "./order-factor
 import { formatAge, humanName }   from "../../lib"
 import { decode } from "../../isomorphic/codec"
 import "./style.css"
+import { fhirclient } from "fhirclient/lib/types"
 
 
 export default function EHR() {
@@ -44,6 +45,37 @@ export default function EHR() {
         });
     };
 
+    const postOrderMessage = (
+        orders: Array<{ type: 'test' | 'treatment', item: string }>,
+        responses: fhirclient.FHIR.Resource[]
+    ) => {
+        const iframe = document.getElementById('frame') as HTMLIFrameElement
+        if (iframe && iframe.contentWindow) {
+            const message = {
+                type: "order",
+                payload: {
+                    timestamp: new Date().toISOString(),
+                    patient: {
+                        id: patient?.id,
+                        name: patientName
+                    },
+                    provider: {
+                        id: user?.id,
+                        name: userName
+                    },
+                    orders: orders.map((order, index) => ({
+                        ...order,
+                        response: responses[index],
+                    }))
+                }
+            }
+            
+            const targetOrigin = launchUrl ? new URL(launchUrl).origin : '*'
+            iframe.contentWindow.postMessage(message, targetOrigin)
+            console.log("Sent order details to iframe:", message)
+        }
+    }
+
     const submitOrders = async (e?: React.MouseEvent) => {
         e?.preventDefault()
         
@@ -74,8 +106,11 @@ export default function EHR() {
                 return response
             })
 
-            await Promise.all(orderPromises)
+            const orderResponses = await Promise.all(orderPromises)
             console.log(`Successfully created ${allOrders.length} orders`)
+            
+            // Send message to iframe with order details
+            postOrderMessage(allOrders, orderResponses)
             
             // Clear selected items after successful submission
             setSelectedItems({ tests: [], treatments: [] })
