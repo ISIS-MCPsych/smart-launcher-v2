@@ -207,7 +207,7 @@ export default function EHR() {
 
     let patientID   = patient?.id ?? "Unknown"
     let userID      = user?.id ?? "Unknown"
-    let patientName = patient ? humanName(patient) : "Unknown"
+    let patientName = patient ? humanName(patient) : null
     let patientAge  = patient && patient.birthDate ? formatAge(patient) || "Unknown" : "Unknown"
     let patientSex  = patient?.gender || "Unknown"
     let userName    = user ? humanName(user) : "Unknown"
@@ -225,7 +225,7 @@ export default function EHR() {
                         </div>
                         <div>
                             <i className="glyphicon glyphicon-user"/>&nbsp;
-                            patient: <b>{ patientName }</b>,
+                            patient: <b>{ patientName ?? "Unknown" }</b>,
                             age: <b>{ patientAge }</b>{patient?.deceasedBoolean || patient?.deceasedDateTime ? " (deceased)" : ""},
                             sex: <b>{ patientSex }</b>
                         </div>
@@ -268,7 +268,7 @@ export default function EHR() {
 
             <dialog ref={orderDialogRef} className="order-dialog">
                 <h3>Place Order</h3>
-                <p>Select the tests and treatments to order for the patient.</p>
+                <p>Select the tests and treatments to order for {patientName ?? "the patient"}.</p>
                 <form>
                     <div>
                         <h4>Tests</h4>
